@@ -20,7 +20,7 @@ public class Lab3 {
 	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 	// Constants
 	public static final double WHEEL_RADIUS = 2.1;
-	public static final double TRACK = 15.4;
+	public static final double TRACK = 14.6;
 
 	public static void main(String[] args) {
 		int buttonChoice;
@@ -36,12 +36,8 @@ public class Lab3 {
 		final TextLCD t = LocalEV3.get().getTextLCD();
 		Odometer odometer = new Odometer(leftMotor, rightMotor, WHEEL_RADIUS, TRACK);
 		OdometryDisplay odometryDisplay = new OdometryDisplay(odometer,t);
-		Position[] position = new Position[4];
-		position[0] = new Position(60,30);
-		position[1] = new Position(30,30);
-		position[2] = new Position(30,60);
-		position[3] = new Position(60,0);
-		Navigate navigate = new Navigate(leftMotor, rightMotor, odometer, WHEEL_RADIUS, TRACK, position);
+		
+		Navigate navigate = new Navigate(leftMotor, rightMotor, odometer, WHEEL_RADIUS, TRACK);
 		
 		do {
 			// clear the display

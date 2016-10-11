@@ -95,12 +95,12 @@ public class Odometer extends Thread {
 				theta += deltaTheta; // TODO replace example value
 				
 				//wrap theta from 0 to 2pi
-//				if (theta>6.28){
-//					theta = theta%6.28;
-//				}
-//				if (theta<0){
-//					theta = 6.28-Math.abs(theta)%6.28;
-//				}
+				if (theta>6.28){
+					theta = theta%6.28;
+				}
+				if (theta<0){
+					theta = 6.28-Math.abs(theta)%6.28;
+				}
 
 				double deltaX = deltaCenterArclength * Math.sin(theta);
 				double deltaY = deltaCenterArclength * Math.cos(theta);

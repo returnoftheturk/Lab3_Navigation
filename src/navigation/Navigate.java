@@ -1,8 +1,6 @@
 package navigation;
 
-import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
-import lejos.hardware.sensor.EV3UltrasonicSensor;
 
 public class Navigate extends Thread {
 	
@@ -17,25 +15,19 @@ public class Navigate extends Thread {
 	private Odometer odometer;
 	private double wheelRadius;
 	private double track;
-	private Position[] destination;
 	private boolean isNavigating = false;
 	
 	
 	private static final int FORWARD_SPEED = 250;
 	private static final int ROTATE_SPEED = 150;
 	
-	public Navigate(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, Odometer odometer, double wheelRadius, double track, Position[] destination){
+	public Navigate(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, Odometer odometer, double wheelRadius, double track){
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
 		//this.usSensor = usSensor;
 		this.odometer = odometer;
 		this.wheelRadius = wheelRadius;
-		this.track = track;
-		this.destination = destination;
-		
-		
-		
-		
+		this.track = track;		
 	}
 	
 	public void run(){
@@ -49,44 +41,27 @@ public class Navigate extends Thread {
 			// there is nothing to be done here because it is not expected that
 			// the odometer will be interrupted by another thread
 		}
-		for (int i = 0; i<4; i++){
-			travelTo((Position)destination[i]);
-		}
+		
+		travelTo(60, 30);
+		travelTo(30,30);
+		travelTo(30, 60);
+		travelTo(60,0);
 	}
 	
-	public void travelTo(Position position){
+	public void travelTo(double x, double y){
 		isNavigating = true;
 		
-		double diffTheta = calculateAngle(position);
-		double distance = calculateDistance(position);
+		double diffTheta = calculateAngle(x, y);
+		double distance = calculateDistance(x, y);
 		
 		turnTo(diffTheta);
 		
 		leftMotor.setSpeed(FORWARD_SPEED);
 		rightMotor.setSpeed(FORWARD_SPEED);
-
 		
 		leftMotor.rotate(convertDistance(wheelRadius, distance), true);
 		rightMotor.rotate(convertDistance(wheelRadius, distance), false);
-		Sound.buzz();
-//		rightMotor.rotate(convertDistance(wheelRadius, distance), true);
-		
-//		while (Math.abs(diffTheta)>0||distance<errorTolerance){
-//			
-//			turnTo(diffTheta);
-//			distance = calculateDistance(position);
-//			diffTheta = calculateAngle(position);
-//
-//			leftMotor.setSpeed(FORWARD_SPEED);
-//			rightMotor.setSpeed(FORWARD_SPEED);
-//			
-//			leftMotor.rotate(convertDistance(wheelRadius, distance), true);
-//			rightMotor.rotate(convertDistance(wheelRadius, distance), true);
-//			
-//			
-//		}
-		
-		
+			
 		isNavigating = false;
 		
 		
@@ -116,10 +91,10 @@ public class Navigate extends Thread {
 		return convertDistance(radius, Math.PI * width * angle / 360.0);
 	}
 	
-	private double calculateAngle(Position position){
+	private double calculateAngle(double x, double y){
 		double thetad = 0;
-		double diffX = position.getX() - odometer.getX();
-		double diffY = position.getY() - odometer.getY();
+		double diffX = x - odometer.getX();
+		double diffY = y - odometer.getY();
 		
 		if (diffY!=0){
 			if (diffY>0){
@@ -158,9 +133,9 @@ public class Navigate extends Thread {
 		
 	}
 	
-	private double calculateDistance(Position position){
-		double diffX = position.getX() - odometer.getX();
-		double diffY = position.getY() - odometer.getY();
+	private double calculateDistance(double x, double y){
+		double diffX = x - odometer.getX();
+		double diffY = y - odometer.getY();
 		
 		double distance = Math.sqrt(Math.pow(diffX, 2)+Math.pow(diffY, 2));
 		
