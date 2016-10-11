@@ -19,7 +19,7 @@ public class UltrasonicPoller extends Thread{
 			distance = (int)(usData[0]*100.0);
 			cont.processUSData(distance);
 			try{
-				Thread.sleep(50); //Steves code has sleep for 50
+				Thread.sleep(50); 
 			}
 			catch(Exception e){}
 			

@@ -12,7 +12,7 @@ public class Navigate extends Thread {
 	private double destinationY;
 	private EV3LargeRegulatedMotor leftMotor;
 	private EV3LargeRegulatedMotor rightMotor;
-	private EV3UltrasonicSensor usSensor;
+	//private EV3UltrasonicSensor usSensor;
 	private Odometer odometer;
 	private double wheelRadius;
 	private double track;
@@ -22,12 +22,10 @@ public class Navigate extends Thread {
 	private static final int FORWARD_SPEED = 250;
 	private static final int ROTATE_SPEED = 150;
 	
-	public Navigate(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor
-			, EV3UltrasonicSensor usSensor, Odometer odometer, double wheelRadius, double track,
-			Position[] destination){
+	public Navigate(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, Odometer odometer, double wheelRadius, double track, Position[] destination){
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
-		this.usSensor = usSensor;
+		//this.usSensor = usSensor;
 		this.odometer = odometer;
 		this.wheelRadius = wheelRadius;
 		this.track = track;

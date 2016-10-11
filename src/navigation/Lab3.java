@@ -36,6 +36,12 @@ public class Lab3 {
 		final TextLCD t = LocalEV3.get().getTextLCD();
 		Odometer odometer = new Odometer(leftMotor, rightMotor, WHEEL_RADIUS, TRACK);
 		OdometryDisplay odometryDisplay = new OdometryDisplay(odometer,t);
+		Position[] position = new Position[4];
+		position[0] = new Position(60,30);
+		position[1] = new Position(30,30);
+		position[2] = new Position(30,60);
+		position[3] = new Position(60,0);
+		Navigate navigate = new Navigate(leftMotor, rightMotor, odometer, WHEEL_RADIUS, TRACK, position);
 		
 		do {
 			// clear the display
@@ -69,12 +75,7 @@ public class Lab3 {
 			odometer.start();
 			odometryDisplay.start();
 			
-			// spawn a new Thread to avoid SquareDriver.drive() from blocking
-			(new Thread() {
-				public void run() {
-					SquareDriver.drive(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK);
-				}
-			}).start();
+			navigate.start();
 		}
 		
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
