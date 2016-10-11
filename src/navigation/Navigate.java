@@ -54,6 +54,65 @@ public class Navigate extends Thread {
 	
 	public void travelTo(Position position){
 		isNavigating = true;
+		
+		double diffTheta = calculateAngle(position);
+		double distance = calculateDistance(position);
+		
+		double errorTolerance = 3;
+		
+		leftMotor.setSpeed(FORWARD_SPEED);
+		rightMotor.setSpeed(FORWARD_SPEED);
+		
+		leftMotor.rotate(convertDistance(wheelRadius, distance), true);
+		rightMotor.rotate(convertDistance(wheelRadius, distance), true);
+		
+		
+		while (Math.abs(diffTheta)>0||distance<errorTolerance){
+			
+			turnTo(diffTheta);
+			distance = calculateDistance(position);
+			diffTheta = calculateAngle(position);
+
+			leftMotor.setSpeed(FORWARD_SPEED);
+			rightMotor.setSpeed(FORWARD_SPEED);
+			
+			leftMotor.rotate(convertDistance(wheelRadius, distance), true);
+			rightMotor.rotate(convertDistance(wheelRadius, distance), true);
+			
+			
+		}
+		
+		
+		isNavigating = false;
+		
+		
+	}
+	
+	public void turnTo(double theta){
+		isNavigating = true;
+		
+		leftMotor.setSpeed(ROTATE_SPEED);
+		rightMotor.setSpeed(ROTATE_SPEED);
+		
+		leftMotor.rotate(convertAngle(wheelRadius, track, theta), true);
+		rightMotor.rotate(convertAngle(wheelRadius, track, theta), false);
+		
+		isNavigating = false;
+	}
+	
+	public boolean isNavigating(){
+		return isNavigating;
+	}
+	
+	private static int convertDistance(double radius, double distance) {
+		return (int) ((180.0 * distance) / (Math.PI * radius));
+	}
+
+	private static int convertAngle(double radius, double width, double angle) {
+		return convertDistance(radius, Math.PI * width * angle / 360.0);
+	}
+	
+	private double calculateAngle(Position position){
 		double thetad = 0;
 		double diffX = position.getX() - odometer.getX();
 		double diffY = position.getY() - odometer.getY();
@@ -86,36 +145,17 @@ public class Navigate extends Thread {
 		if (diffTheta>Math.PI/2)
 			diffTheta -= 2* Math.PI;
 		
-		turnTo(diffTheta);
-		
-		
-		isNavigating = false;
-		
+		return diffTheta;
 		
 	}
 	
-	public void turnTo(double theta){
-		isNavigating = true;
+	private double calculateDistance(Position position){
+		double diffX = position.getX() - odometer.getX();
+		double diffY = position.getY() - odometer.getY();
 		
-		leftMotor.setSpeed(ROTATE_SPEED);
-		rightMotor.setSpeed(ROTATE_SPEED);
+		double distance = Math.sqrt(Math.pow(diffX, 2)+Math.pow(diffY, 2));
 		
-		leftMotor.rotate(convertAngle(wheelRadius, track, theta), true);
-		rightMotor.rotate(convertAngle(wheelRadius, track, theta), false);
-		
-		isNavigating = false;
-	}
-	
-	public boolean isNavigating(){
-		return isNavigating;
-	}
-	
-	private static int convertDistance(double radius, double distance) {
-		return (int) ((180.0 * distance) / (Math.PI * radius));
-	}
-
-	private static int convertAngle(double radius, double width, double angle) {
-		return convertDistance(radius, Math.PI * width * angle / 360.0);
+		return distance;
 	}
 
 }
