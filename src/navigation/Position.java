@@ -4,10 +4,12 @@ public class Position {
 	private static double x;
 	private static double y;
 	private static double theta;
+	private Object lock;
 	
 	public Position(double x, double y){
 		this.x = x;
 		this.y = y;
+		lock = new Object();
 //		this.theta = theta;
 		
 	}
@@ -19,14 +21,26 @@ public class Position {
 	}
 	
 	public double getX(){
-		return x;
+		double result;
+
+		synchronized (lock) {
+			result = x;
+		}
+
+		return result;
 	}
 	
 	public void setX(double x){
 		this.x = x;
 	}
 	public double getY(){
-		return y;
+		double result;
+
+		synchronized (lock) {
+			result = y;
+		}
+
+		return result;
 	}
 	
 	public void setY(double y){

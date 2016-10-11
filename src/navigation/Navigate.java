@@ -1,5 +1,6 @@
 package navigation;
 
+import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.sensor.EV3UltrasonicSensor;
 
@@ -19,6 +20,7 @@ public class Navigate extends Thread {
 	private Position[] destination;
 	private boolean isNavigating = false;
 	
+	
 	private static final int FORWARD_SPEED = 250;
 	private static final int ROTATE_SPEED = 150;
 	
@@ -31,22 +33,24 @@ public class Navigate extends Thread {
 		this.track = track;
 		this.destination = destination;
 		
-		for (EV3LargeRegulatedMotor motor : new EV3LargeRegulatedMotor[] { leftMotor, rightMotor }) {
-			motor.stop();
-			motor.setAcceleration(200);
-		}
+		
+		
 		
 	}
 	
 	public void run(){
+		for (EV3LargeRegulatedMotor motor : new EV3LargeRegulatedMotor[] { leftMotor, rightMotor }) {
+			motor.stop();
+			motor.setAcceleration(200);
+		}
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {
 			// there is nothing to be done here because it is not expected that
 			// the odometer will be interrupted by another thread
 		}
-		for (int i = 0; i<destination.length; i++){
-			travelTo(destination[i]);
+		for (int i = 0; i<4; i++){
+			travelTo((Position)destination[i]);
 		}
 	}
 	
@@ -56,29 +60,31 @@ public class Navigate extends Thread {
 		double diffTheta = calculateAngle(position);
 		double distance = calculateDistance(position);
 		
-		double errorTolerance = 3;
+		turnTo(diffTheta);
 		
 		leftMotor.setSpeed(FORWARD_SPEED);
 		rightMotor.setSpeed(FORWARD_SPEED);
+
 		
 		leftMotor.rotate(convertDistance(wheelRadius, distance), true);
-		rightMotor.rotate(convertDistance(wheelRadius, distance), true);
+		rightMotor.rotate(convertDistance(wheelRadius, distance), false);
+		Sound.buzz();
+//		rightMotor.rotate(convertDistance(wheelRadius, distance), true);
 		
-		
-		while (Math.abs(diffTheta)>0||distance<errorTolerance){
-			
-			turnTo(diffTheta);
-			distance = calculateDistance(position);
-			diffTheta = calculateAngle(position);
-
-			leftMotor.setSpeed(FORWARD_SPEED);
-			rightMotor.setSpeed(FORWARD_SPEED);
-			
-			leftMotor.rotate(convertDistance(wheelRadius, distance), true);
-			rightMotor.rotate(convertDistance(wheelRadius, distance), true);
-			
-			
-		}
+//		while (Math.abs(diffTheta)>0||distance<errorTolerance){
+//			
+//			turnTo(diffTheta);
+//			distance = calculateDistance(position);
+//			diffTheta = calculateAngle(position);
+//
+//			leftMotor.setSpeed(FORWARD_SPEED);
+//			rightMotor.setSpeed(FORWARD_SPEED);
+//			
+//			leftMotor.rotate(convertDistance(wheelRadius, distance), true);
+//			rightMotor.rotate(convertDistance(wheelRadius, distance), true);
+//			
+//			
+//		}
 		
 		
 		isNavigating = false;
@@ -92,8 +98,8 @@ public class Navigate extends Thread {
 		leftMotor.setSpeed(ROTATE_SPEED);
 		rightMotor.setSpeed(ROTATE_SPEED);
 		
-		leftMotor.rotate(convertAngle(wheelRadius, track, theta), true);
-		rightMotor.rotate(convertAngle(wheelRadius, track, theta), false);
+		leftMotor.rotate(convertAngle(wheelRadius, track, theta*180/Math.PI), true);
+		rightMotor.rotate(-convertAngle(wheelRadius, track, theta*180/Math.PI), false);
 		
 		isNavigating = false;
 	}
@@ -118,12 +124,17 @@ public class Navigate extends Thread {
 		if (diffY!=0){
 			if (diffY>0){
 				thetad = Math.atan(diffX/diffY);
+				if (diffX==0)
+					thetad = 0;
 			}
+			
 			else if (diffY<0){
 				if (diffX<0)
 					thetad = Math.atan(diffX/diffY) - Math.PI;
 				if (diffX>0)
 					thetad = Math.atan(diffX/diffY) + Math.PI;
+				if (diffX==0)
+					thetad = Math.PI;
 			}
 		} else if (diffY==0){
 			if (diffX>0)
@@ -138,9 +149,9 @@ public class Navigate extends Thread {
 		
 		double diffTheta = thetad - thetar;
 		
-		if (diffTheta<-Math.PI/2)
+		if (diffTheta<-Math.PI)
 			diffTheta += 2* Math.PI;
-		if (diffTheta>Math.PI/2)
+		if (diffTheta>Math.PI)
 			diffTheta -= 2* Math.PI;
 		
 		return diffTheta;
