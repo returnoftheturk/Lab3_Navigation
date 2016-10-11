@@ -19,6 +19,9 @@ public class Navigate extends Thread {
 	private Position[] destination;
 	private boolean isNavigating = false;
 	
+	private static final int FORWARD_SPEED = 250;
+	private static final int ROTATE_SPEED = 150;
+	
 	public Navigate(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor
 			, EV3UltrasonicSensor usSensor, Odometer odometer, double wheelRadius, double track,
 			Position[] destination){
@@ -94,13 +97,25 @@ public class Navigate extends Thread {
 	public void turnTo(double theta){
 		isNavigating = true;
 		
+		leftMotor.setSpeed(ROTATE_SPEED);
+		rightMotor.setSpeed(ROTATE_SPEED);
 		
+		leftMotor.rotate(convertAngle(wheelRadius, track, theta), true);
+		rightMotor.rotate(convertAngle(wheelRadius, track, theta), false);
+		
+		isNavigating = false;
 	}
 	
 	public boolean isNavigating(){
-		
 		return isNavigating;
 	}
 	
+	private static int convertDistance(double radius, double distance) {
+		return (int) ((180.0 * distance) / (Math.PI * radius));
+	}
+
+	private static int convertAngle(double radius, double width, double angle) {
+		return convertDistance(radius, Math.PI * width * angle / 360.0);
+	}
 
 }
