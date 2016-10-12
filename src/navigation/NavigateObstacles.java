@@ -4,12 +4,10 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 public class NavigateObstacles extends Thread implements UltrasonicController{
 
-	private int distance;
-	private double currentX;
-	private double currentY;
-	private double currentTheta;
-	private double destinationX;
-	private double destinationY;
+	private final int bandCenter = 32, bandwidth = 5;
+	private final int motorConstant = 150, motorDelta = 150, FILTER_OUT = 32;
+	private int distanceUS;
+	private int distanceError;
 	private EV3LargeRegulatedMotor leftMotor;
 	private EV3LargeRegulatedMotor rightMotor;
 	//private EV3UltrasonicSensor usSensor;
@@ -17,6 +15,8 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 	private double wheelRadius;
 	private double track;
 	private boolean isNavigating = false;
+	private int filterControl;
+	private boolean seesWall = false;
 	
 	
 	private static final int FORWARD_SPEED = 250;
@@ -43,10 +43,8 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 			// the odometer will be interrupted by another thread
 		}
 		
-		travelTo(60, 30);
-		travelTo(30,30);
-		travelTo(30, 60);
-		travelTo(60,0);
+		travelTo(0, 60);
+		travelTo(60, 0);
 	}
 	
 	public void travelTo(double x, double y){
@@ -145,14 +143,69 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 	
 	@Override
 	public void processUSData(int distance) {
-		// TODO Auto-generated method stub
-		this.distance = distance;
+		
+		if (distance >= 255 && filterControl < FILTER_OUT) {
+			// bad value, do not set the distance var, however do increment the
+			// filter value
+			filterControl++;
+		} else if (distance >= 255) {
+			// We have repeated large values, so there must actually be nothing
+			// there: leave the distance alone
+			this.distanceUS = distance;
+		} else {
+			// distance went below 255: reset filter and leave
+			// distance alone.
+			filterControl = 0;
+			this.distanceUS = distance;
+		}
+		
+		
+		// TODO: process a movement based on the us distance passed in (BANG-BANG style)
+		distanceError = bandCenter - this.distanceUS;
+		// if close to the wall, rotate to the right in place
+		if (this.distanceUS<20){
+			leftMotor.setSpeed(motorConstant);
+			rightMotor.setSpeed(motorConstant);
+			leftMotor.forward();
+			rightMotor.backward();
+			
+		}
+		// if the robot is within the band move towards the wall
+		if (Math.abs(distanceError)<=bandwidth){
+			leftMotor.setSpeed(motorConstant);
+			rightMotor.setSpeed(motorConstant + motorDelta - 100);
+			leftMotor.forward();
+			rightMotor.forward();
+			
+		}
+		// if too close to the wall move away from the wall
+		else if (distanceError>bandwidth){
+			seesWall = true;
+			
+			leftMotor.setSpeed(motorConstant);
+		//	rightMotor.setSpeed(50);
+			rightMotor.setSpeed(60);
+			leftMotor.forward();
+			rightMotor.backward();
+						
+		}
+		// if 
+		else if (distanceError<bandwidth){
+			leftMotor.backward();
+			rightMotor.backward();
+			leftMotor.setSpeed(motorConstant);
+			rightMotor.setSpeed(motorConstant + motorDelta - 45);
+			leftMotor.forward();
+			rightMotor.forward();
+			
+			
+		}
 	}
 
 	@Override
 	public int readUSDistance() {
 		// TODO Auto-generated method stub
-		return distance;
+		return distanceUS;
 	}
 
 }

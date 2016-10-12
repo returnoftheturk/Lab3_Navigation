@@ -10,11 +10,13 @@ public class OdometryDisplay extends Thread {
 	private static final long DISPLAY_PERIOD = 250;
 	private Odometer odometer;
 	private TextLCD t;
+	private NavigateObstacles navigateObstacles;
 
 	// constructor
-	public OdometryDisplay(Odometer odometer, TextLCD t) {
+	public OdometryDisplay(Odometer odometer, TextLCD t, NavigateObstacles navigateObstacles) {
 		this.odometer = odometer;
 		this.t = t;
+		this.navigateObstacles = navigateObstacles;
 	}
 
 	// run method (required for Thread)
@@ -33,6 +35,7 @@ public class OdometryDisplay extends Thread {
 			t.drawString("Y:              ", 0, 1);
 			t.drawString("T:              ", 0, 2);
 			t.drawString("C:              ", 0, 3);
+			t.drawString("Distance:       ", 0, 4);
 
 			// get the odometry information
 			odometer.getPosition(position, new boolean[] { true, true, true });
@@ -41,6 +44,7 @@ public class OdometryDisplay extends Thread {
 			for (int i = 0; i < 3; i++) {
 				t.drawString(formattedDoubleToString(position[i], 2), 3, i);
 			}
+				t.drawInt(navigateObstacles.readUSDistance(), 3, 4);
 			//show the color sensor reading
 				
 			// throttle the OdometryDisplay

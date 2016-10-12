@@ -4,11 +4,6 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 public class Navigate extends Thread {
 	
-	private double currentX;
-	private double currentY;
-	private double currentTheta;
-	private double destinationX;
-	private double destinationY;
 	private EV3LargeRegulatedMotor leftMotor;
 	private EV3LargeRegulatedMotor rightMotor;
 	//private EV3UltrasonicSensor usSensor;
