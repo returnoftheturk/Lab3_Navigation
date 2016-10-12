@@ -59,6 +59,7 @@ public class Lab3 {
 			odometer.start();
 			odometryDisplay.start();
 			usPoller.start();
+			navigateObstacles.start();
 			
 			
 			

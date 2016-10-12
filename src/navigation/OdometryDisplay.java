@@ -34,8 +34,7 @@ public class OdometryDisplay extends Thread {
 			t.drawString("X:              ", 0, 0);
 			t.drawString("Y:              ", 0, 1);
 			t.drawString("T:              ", 0, 2);
-			t.drawString("C:              ", 0, 3);
-			t.drawString("Distance:       ", 0, 4);
+			t.drawString("Distance:       ", 0, 3);
 
 			// get the odometry information
 			odometer.getPosition(position, new boolean[] { true, true, true });
@@ -44,7 +43,7 @@ public class OdometryDisplay extends Thread {
 			for (int i = 0; i < 3; i++) {
 				t.drawString(formattedDoubleToString(position[i], 2), 3, i);
 			}
-				t.drawInt(navigateObstacles.readUSDistance(), 3, 4);
+				t.drawInt(navigateObstacles.readUSDistance(), 10, 3);
 			//show the color sensor reading
 				
 			// throttle the OdometryDisplay

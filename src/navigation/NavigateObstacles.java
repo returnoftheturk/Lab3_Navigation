@@ -1,5 +1,6 @@
 package navigation;
 
+import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 public class NavigateObstacles extends Thread implements UltrasonicController{
@@ -17,7 +18,7 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 	private boolean isNavigating = false;
 	private int filterControl;
 	private boolean seesWall = false;
-	
+	private Object lock;
 	
 	private static final int FORWARD_SPEED = 250;
 	private static final int ROTATE_SPEED = 150;
@@ -29,6 +30,7 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 		this.odometer = odometer;
 		this.wheelRadius = wheelRadius;
 		this.track = track;		
+		lock = new Object();
 	}
 	
 	public void run(){
@@ -60,8 +62,16 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 		
 		leftMotor.rotate(convertDistance(wheelRadius, distance), true);
 		rightMotor.rotate(convertDistance(wheelRadius, distance), false);
-			
-		isNavigating = false;
+		
+//		boolean atDestination = false;
+//		while (!atDestination){
+//			if (odometer.getX() = )
+//			
+//			
+//			
+//		}
+		
+//		isNavigating = false;
 		
 		
 	}
@@ -143,7 +153,7 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 	
 	@Override
 	public void processUSData(int distance) {
-		
+		synchronized (lock){
 		if (distance >= 255 && filterControl < FILTER_OUT) {
 			// bad value, do not set the distance var, however do increment the
 			// filter value
@@ -164,41 +174,40 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 		distanceError = bandCenter - this.distanceUS;
 		// if close to the wall, rotate to the right in place
 		if (this.distanceUS<20){
-			leftMotor.setSpeed(motorConstant);
-			rightMotor.setSpeed(motorConstant);
-			leftMotor.forward();
-			rightMotor.backward();
+			seesWall = true;
+			Sound.buzz();
 			
 		}
 		// if the robot is within the band move towards the wall
 		if (Math.abs(distanceError)<=bandwidth){
-			leftMotor.setSpeed(motorConstant);
-			rightMotor.setSpeed(motorConstant + motorDelta - 100);
-			leftMotor.forward();
-			rightMotor.forward();
+//			leftMotor.setSpeed(motorConstant);
+//			rightMotor.setSpeed(motorConstant + motorDelta - 100);
+//			leftMotor.forward();
+//			rightMotor.forward();
 			
 		}
 		// if too close to the wall move away from the wall
 		else if (distanceError>bandwidth){
 			seesWall = true;
+			Sound.buzz();
 			
-			leftMotor.setSpeed(motorConstant);
-		//	rightMotor.setSpeed(50);
-			rightMotor.setSpeed(60);
-			leftMotor.forward();
-			rightMotor.backward();
+//			leftMotor.setSpeed(motorConstant);
+//			rightMotor.setSpeed(60);
+//			leftMotor.forward();
+//			rightMotor.backward();
 						
 		}
 		// if 
 		else if (distanceError<bandwidth){
-			leftMotor.backward();
-			rightMotor.backward();
-			leftMotor.setSpeed(motorConstant);
-			rightMotor.setSpeed(motorConstant + motorDelta - 45);
-			leftMotor.forward();
-			rightMotor.forward();
+//			leftMotor.backward();
+//			rightMotor.backward();
+//			leftMotor.setSpeed(motorConstant);
+//			rightMotor.setSpeed(motorConstant + motorDelta - 45);
+//			leftMotor.forward();
+//			rightMotor.forward();
 			
 			
+		}
 		}
 	}
 
