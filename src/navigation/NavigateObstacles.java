@@ -77,6 +77,11 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 				}
 				catch(Exception e){}
 			}
+			if (readUSDistance()<15){
+				seesWall = true;			
+				
+			}
+			
 			
 			
 			
@@ -170,22 +175,32 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 		// TODO: process a movement based on the us distance passed in (BANG-BANG style)
 		distanceError = bandCenter - this.distanceUS;
 		// if close to the wall, rotate to the right in place
-//		if (this.distanceUS<20){
-//			
-//			seesWall = true;
-//			
-//			
-//		}
-		// if the robot is within the band move towards the wall
-		if (firstTime>0){
-			if (Math.abs(distanceError)<=bandwidth){
-				leftMotor.setSpeed(motorConstant);
-				rightMotor.setSpeed(motorConstant + motorDelta - 100);
-				leftMotor.forward();
-				rightMotor.forward();
+		if (this.distanceUS=<20){
+			seesWall = true;
+		}
+		else if (this.distanceUS>20)
+			seesWall = false;
+		
+		try {
+			synchronized (lock){
+				while (!seesWall)
+					lock.wait();
 				
 			}
+			
+				
 		}
+		
+		// if the robot is within the band move towards the wall
+//		if (firstTime>0){
+//			if (Math.abs(distanceError)<=bandwidth){
+//				leftMotor.setSpeed(motorConstant);
+//				rightMotor.setSpeed(motorConstant + motorDelta - 100);
+//				leftMotor.forward();
+//				rightMotor.forward();
+//				
+//			}
+//		}
 		// if too close to the wall move away from the wall
 //		else if (distanceError>bandwidth){
 		if (distanceError>bandwidth){
