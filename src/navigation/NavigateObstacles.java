@@ -5,7 +5,7 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 public class NavigateObstacles extends Thread implements UltrasonicController{
 
-	private final int bandCenter = 32, bandwidth = 5;
+	private final int bandCenter = 25, bandwidth = 5;
 	private final int motorConstant = 150, motorDelta = 150, FILTER_OUT = 32;
 	private int distanceUS;
 	private int distanceError;
@@ -19,6 +19,8 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 	private int filterControl;
 	private boolean seesWall = false;
 	private Object lock;
+	private int firstTime = 0;
+	private double thetaBeforeBlock;
 	
 	private static final int FORWARD_SPEED = 250;
 	private static final int ROTATE_SPEED = 150;
@@ -50,6 +52,8 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 	}
 	
 	public void travelTo(double x, double y){
+		synchronized(lock){
+			
 		isNavigating = true;
 		
 		double diffTheta = calculateAngle(x, y);
@@ -64,19 +68,19 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 		rightMotor.rotate(convertDistance(wheelRadius, distance), true);
 		
 		boolean atDestination = false;
+		double currentTheta = odometer.getTheta();
 		while (!atDestination){
 			if (calculateDistance(x,y)<3){
 				atDestination = true;
 				try{
-					Thread.sleep(2000); 
+					Thread.sleep(1000); 
 				}
 				catch(Exception e){}
 			}
-			if (seesWall){
-				Sound.buzz();
-			}
 			
 			
+			
+		}
 		}
 		
 //		isNavigating = false;
@@ -161,48 +165,49 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 	
 	@Override
 	public void processUSData(int distance) {
-		synchronized (lock){
-		if (distance >= 255 && filterControl < FILTER_OUT) {
-			// bad value, do not set the distance var, however do increment the
-			// filter value
-			filterControl++;
-		} else if (distance >= 255) {
-			// We have repeated large values, so there must actually be nothing
-			// there: leave the distance alone
-			this.distanceUS = distance;
-		} else {
-			// distance went below 255: reset filter and leave
-			// distance alone.
-			filterControl = 0;
-			this.distanceUS = distance;
-		}
-		
+		this.distanceUS = distance;		
 		
 		// TODO: process a movement based on the us distance passed in (BANG-BANG style)
 		distanceError = bandCenter - this.distanceUS;
 		// if close to the wall, rotate to the right in place
-		if (this.distanceUS<20){
-			seesWall = true;
-			
-			
-		}
+//		if (this.distanceUS<20){
+//			
+//			seesWall = true;
+//			
+//			
+//		}
 		// if the robot is within the band move towards the wall
-		if (Math.abs(distanceError)<=bandwidth){
-//			leftMotor.setSpeed(motorConstant);
-//			rightMotor.setSpeed(motorConstant + motorDelta - 100);
-//			leftMotor.forward();
-//			rightMotor.forward();
-			
+		if (firstTime>0){
+			if (Math.abs(distanceError)<=bandwidth){
+				leftMotor.setSpeed(motorConstant);
+				rightMotor.setSpeed(motorConstant + motorDelta - 100);
+				leftMotor.forward();
+				rightMotor.forward();
+				
+			}
 		}
 		// if too close to the wall move away from the wall
-		else if (distanceError>bandwidth){
+//		else if (distanceError>bandwidth){
+		if (distanceError>bandwidth){
 			seesWall = true;
+			if (firstTime == 0){
+				thetaBeforeBlock = odometer.getTheta();
+				synchronized(lock){
+				try {
+					lock.wait();
+				} catch (InterruptedException e) {}
+				}
+				
+			}
+			
+			if (firstTime>0){
+				leftMotor.setSpeed(motorConstant);
+				rightMotor.setSpeed(60);
+				leftMotor.forward();
+				rightMotor.backward();	
+			}
 			
 			
-//			leftMotor.setSpeed(motorConstant);
-//			rightMotor.setSpeed(60);
-//			leftMotor.forward();
-//			rightMotor.backward();
 						
 		}
 		// if 
@@ -217,7 +222,10 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 			
 			
 		}
-		}
+		if (firstTime>0)
+			if (Math.abs(odometer.getTheta()-thetaBeforeBlock)<Math.PI/2)
+				lock.notifyAll();
+		
 	}
 
 	@Override
