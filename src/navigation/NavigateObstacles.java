@@ -5,7 +5,7 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.sensor.EV3UltrasonicSensor;
 
 public class NavigateObstacles extends Thread implements UltrasonicController {
-	
+
 	private double currentX;
 	private double currentY;
 	private double currentTheta;
@@ -19,7 +19,7 @@ public class NavigateObstacles extends Thread implements UltrasonicController {
 	private double wheelRadius;
 	private double track;
 	private boolean isNavigating = false;
-	private boolean isDriving = false;
+	private boolean detected = false;
 	// Added a filter from P controller so that the robot could avoid gaps.
 	private final int FILTER_OUT = 25;
 	private int filterControl = 0;
@@ -60,13 +60,77 @@ public class NavigateObstacles extends Thread implements UltrasonicController {
 
 		int[][] position = { { 0, 60 }, { 60, 0 } };
 		int positionIndex = 0;
-		
-		isDriving = true;
-		
 
-		for (int i =0; i<position.length; i++){		
+		while (true) {
+			if (positionIndex >= position.length) {
+				break;
+			}
+
 			travelTo(position[positionIndex][0], position[positionIndex][1]);
+			positionIndex++;
+			
+			if (detectObstacle() == true) {
+				// use wall follower
+				// set local distance variable
+				this.sensorDistance = sensorDistance;
+				// speed of left motor always remains constant
+				// if robot is closer to the wall than the lowest allowed band (bandCenter-bandwidth)
+				if (sensorDistance < bandCenter - bandwidth) {
+					// rotate to the right if too close to the wall
+					if (sensorDistance <= sensorDistance) {
+						// set the speed to the lower speed
+						leftMotor.setSpeed(motorLow + 100);
+						rightMotor.setSpeed(motorLow + 100);
+
+						// rotate
+						leftMotor.forward(); // Spin left motor forward
+						rightMotor.backward(); // spin right motor backward.
+
+					} else {
+						// get back into our allowed band.
+						leftMotor.setSpeed(motorLow + 100); // set left high
+						rightMotor.setSpeed(motorLow); // set right low
+						// move away from wall (to the right)
+
+						// move forward
+						leftMotor.forward();
+						rightMotor.forward();
+					}
+					// if robot is farther than the highest allowed band (bandCenter + bandwidth)
+				} else if (sensorDistance > bandCenter + bandwidth) {
+					leftMotor.setSpeed(motorLow + 100); // set left low
+					rightMotor.setSpeed(motorHigh); // set right high
+					// this will move robot closer to wall
+
+					// move forward
+					leftMotor.forward();
+					rightMotor.forward();
+
+					// if our robot is inside the band, we just want to move forward.
+				} else {
+					// set both motor speeds to high
+					leftMotor.setSpeed(motorLow + 100);
+					rightMotor.setSpeed(motorLow + 100);
+
+					// move forward
+					leftMotor.forward();
+					rightMotor.forward();
+				}
+
+		
+				
+
+			}
 		}
+
+	}
+
+	public boolean detectObstacle() {
+		detected = false;
+		if (sensorDistance < 30) {
+			detected = true;
+		}
+		return detected;
 
 	}
 
@@ -170,7 +234,6 @@ public class NavigateObstacles extends Thread implements UltrasonicController {
 		sensorDistance = distance;
 
 	}
-	
 
 	@Override
 	public int readUSDistance() {
