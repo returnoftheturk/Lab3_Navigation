@@ -1,6 +1,0 @@
-https://github.com/PaulDesBrisay/DPM_Fall2015_Group15_Lab3/tree/master/src/ev3Navigation
-
-
-i found this in github
-
-this might help solving the while loop you were talking about
