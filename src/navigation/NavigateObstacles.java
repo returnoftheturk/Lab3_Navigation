@@ -34,7 +34,6 @@ public class NavigateObstacles extends Thread implements UltrasonicController {
 			double wheelRadius, double track) {
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
-		// this.usSensor = usSensor;
 		this.odometer = odometer;
 		this.wheelRadius = wheelRadius;
 		this.track = track;
@@ -62,16 +61,19 @@ public class NavigateObstacles extends Thread implements UltrasonicController {
 		int positionIndex = 0;
 
 		while (true) {
+			// done traveling all the positions, so break
 			if (positionIndex >= position.length) {
 				break;
 			}
-
 			travelTo(position[positionIndex][0], position[positionIndex][1]);
-			positionIndex++;
 			
+			// if there is a obstacle, do wall follower
 			if (detectObstacle() == true) {
-				// use wall follower
+				// bb controller
 				// set local distance variable
+				double currentTheta = odometer.getTheta();
+				double firstTheta = currentTheta;
+				
 				this.sensorDistance = sensorDistance;
 				// speed of left motor always remains constant
 				// if robot is closer to the wall than the lowest allowed band (bandCenter-bandwidth)
@@ -116,11 +118,17 @@ public class NavigateObstacles extends Thread implements UltrasonicController {
 					leftMotor.forward();
 					rightMotor.forward();
 				}
-
-		
-				
-
+				// if we reach the initial theta, move a bit and travel to the position again
+				if (firstTheta == currentTheta) {
+					leftMotor.rotate(6);
+					rightMotor.rotate(6);
+					travelTo(position[positionIndex][0], position[positionIndex][1]);
+				}
 			}
+			
+			positionIndex++;
+			
+			
 		}
 
 	}
@@ -139,15 +147,15 @@ public class NavigateObstacles extends Thread implements UltrasonicController {
 		isNavigating = true;
 
 		double diffTheta = calculateAngle(x, y);
-		double sensorDistance = calculatesensorDistance(x, y);
+		double distance = calculatesensorDistance(x, y);
 
 		turnTo(diffTheta);
 
 		leftMotor.setSpeed(FORWARD_SPEED);
 		rightMotor.setSpeed(FORWARD_SPEED);
 
-		leftMotor.rotate(convertsensorDistance(wheelRadius, sensorDistance), true);
-		rightMotor.rotate(convertsensorDistance(wheelRadius, sensorDistance), false);
+		leftMotor.rotate(convertsensorDistance(wheelRadius, distance), true);
+		rightMotor.rotate(convertsensorDistance(wheelRadius, distance), false);
 
 		isNavigating = false;
 
