@@ -61,15 +61,23 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 		rightMotor.setSpeed(FORWARD_SPEED);
 		
 		leftMotor.rotate(convertDistance(wheelRadius, distance), true);
-		rightMotor.rotate(convertDistance(wheelRadius, distance), false);
+		rightMotor.rotate(convertDistance(wheelRadius, distance), true);
 		
-//		boolean atDestination = false;
-//		while (!atDestination){
-//			if (odometer.getX() = )
-//			
-//			
-//			
-//		}
+		boolean atDestination = false;
+		while (!atDestination){
+			if (calculateDistance(x,y)<3){
+				atDestination = true;
+				try{
+					Thread.sleep(2000); 
+				}
+				catch(Exception e){}
+			}
+			if (seesWall){
+				Sound.buzz();
+			}
+			
+			
+		}
 		
 //		isNavigating = false;
 		
@@ -175,7 +183,7 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 		// if close to the wall, rotate to the right in place
 		if (this.distanceUS<20){
 			seesWall = true;
-			Sound.buzz();
+			
 			
 		}
 		// if the robot is within the band move towards the wall
@@ -189,7 +197,7 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 		// if too close to the wall move away from the wall
 		else if (distanceError>bandwidth){
 			seesWall = true;
-			Sound.buzz();
+			
 			
 //			leftMotor.setSpeed(motorConstant);
 //			rightMotor.setSpeed(60);
@@ -199,6 +207,7 @@ public class NavigateObstacles extends Thread implements UltrasonicController{
 		}
 		// if 
 		else if (distanceError<bandwidth){
+			seesWall = false;
 //			leftMotor.backward();
 //			rightMotor.backward();
 //			leftMotor.setSpeed(motorConstant);
