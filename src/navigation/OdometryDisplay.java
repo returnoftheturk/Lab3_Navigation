@@ -10,11 +10,13 @@ public class OdometryDisplay extends Thread {
 	private static final long DISPLAY_PERIOD = 250;
 	private Odometer odometer;
 	private TextLCD t;
+	private UltrasonicController cont;
 
 	// constructor
-	public OdometryDisplay(Odometer odometer, TextLCD t) {
+	public OdometryDisplay(Odometer odometer, TextLCD t, UltrasonicController cont) {
 		this.odometer = odometer;
 		this.t = t;
+		this.cont = cont;
 	}
 
 	// run method (required for Thread)
@@ -41,8 +43,9 @@ public class OdometryDisplay extends Thread {
 			for (int i = 0; i < 3; i++) {
 				t.drawString(formattedDoubleToString(position[i], 2), 3, i);
 			}
-			//show the color sensor reading
-				
+			//show the us sensor reading
+			t.drawString("US Distance: " + cont.readUSDistance(), 0, 3 );
+			
 			// throttle the OdometryDisplay
 			displayEnd = System.currentTimeMillis();
 			if (displayEnd - displayStart < DISPLAY_PERIOD) {

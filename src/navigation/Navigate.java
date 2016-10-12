@@ -2,7 +2,7 @@ package navigation;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
-public class Navigate extends Thread {
+public class Navigate extends Thread implements UltrasonicController{
 	
 	private double currentX;
 	private double currentY;
@@ -43,9 +43,9 @@ public class Navigate extends Thread {
 		}
 		
 		travelTo(60, 30);
-		travelTo(30,30);
+		travelTo(30, 30);
 		travelTo(30, 60);
-		travelTo(60,0);
+		travelTo(60, 0);
 	}
 	
 	public void travelTo(double x, double y){
@@ -140,6 +140,18 @@ public class Navigate extends Thread {
 		double distance = Math.sqrt(Math.pow(diffX, 2)+Math.pow(diffY, 2));
 		
 		return distance;
+	}
+
+	@Override
+	public void processUSData(int distance) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int readUSDistance() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }
